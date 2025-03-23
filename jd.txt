@@ -1,0 +1,79 @@
+Mô tả Công việc
+- Lập trình ứng dụng xử lý hình ảnh, machine learning và deep learning trên các hệ điều hành như Linux, Windows hoặc MacOS.
+
+- Xây dựng ML model để giải quyết các bài toán Classification, Object detection, Semantic segmentation, Instance segmentation, OCR...
+
+- Chuẩn bị dataset từ các dữ liệu thu thập trên các hệ thống trong các dự án của công ty.
+
+- Nghiên cứu ứng dụng các giải pháp machine learning và deep learning vào các dự án hiện tại và các dự án mới.
+
+- Xây dựng process software, xử lý hình ảnh, quản lý tài nguyên camera, quản lý tài nguyên GPU.
+
+- Tối ưu ML model và xây dựng project có kiến trúc rõ ràng.
+
+* Quyền lợi
+
+- Review tăng lương vào 2 đợt tháng 4 và tháng 10 hàng năm.
+
+- Hưởng lương tháng 13, 14, 15 và xét thưởng dự án vào cuối năm.
+
+- Đối với ứng viên có kinh nghiệm, mức lương có thể chi trả lên đến 25 triệu VND.
+
+- Được đề bạt các vị trí Project Manager hoặc Leader nếu thể hiện được năng lực quản lý.
+
+- Xét thưởng sáng kiến theo dự án.
+
+- Xét thưởng nhân viên xuất sắc mỗi quý.
+
+- Được đào tạo để tham gia vào các dự án thực tế đang triển khai trong các máy móc tự động hóa thay thế con người cho các khách hàng lớn bên US.
+
+- Bên cạnh chế độ Bảo hiểm theo quy định, công ty mua Bảo hiểm sức khỏe (Bảo việt) cho nhân viên và 03 thành viên gia đình.
+
+- Tham gia các hoạt động Team building, du lịch, dã ngoại hàng năm.
+
+- Cung cấp miễn phí bữa trưa, bữa chiều, sữa, trái cây, cà phê, bánh ngọt...
+
+- Cơ hội làm việc với đồng nghiệp, khách hàng từ nhiều quốc gia (US, Hong Kong, Thai Lan, Canada,…)
+
+- Được học English miễn phí.
+
+- Được sử dụng phòng Guitar, phòng Gym và phòng Bóng bàn miễn phí.
+
+Yêu Cầu Công Việc
+- Tốt nghiệp đại học về Công nghệ thông tin, Trí tuệ nhân tạo, Khoa học máy tính, Điện tử viễn thông, Tự động hóa, Kỹ thuật máy tính hoặc các lĩnh vực liên quan.
+
+- Có kinh nghiệm làm việc từ 1 đến 2 năm trở lên ở vị trí kỹ sư Machine Learning.
+
+- Có khả năng lập trình Python, C/C++ trên Linux.
+
+- Có khả năng đọc hiểu và viết báo cáo bằng tiếng Anh.
+
+- Có kỹ năng làm việc theo nhóm.
+
+- Chịu được áp lực cao trong công việc.
+
+- Ưu tiên ứng viên có kiến thức, kinh nghiệm và kỹ năng như sau:
+
++ Có kinh nghiệm sử dụng Jupyter Notebook, Visual Studio Code, Qt Framework.
+
++ Có kinh nghiệm trong việc xây dựng các model classification, object detection, semantic segmentation, instance segmentation, OCR...
+
++ Có kinh nghiệm làm việc với camera hoặc GPU là một lợi thế.
+
++ Có kinh nghiệm lập trình ứng dụng xử lý hình ảnh là một lợi thế.
+
++ Có kinh nghiệm về tensorflow2.x, pytorch, docker là một lợi thế.
+
++ Có kinh nghiệm deploy ML model sử dụng Triton Server, TF Serving, hoặc OpenVino Server là một lợi thế.
+
++ Có kinh nghiệm xây dựng quy trình tự động train/test/deploy Python apps và ML models sử dụng GitLab CI/CD, DVC, Jenkins là một lợi thế.
+
+Địa điểm làm việc
+Hồ Chí Minh
+ Lo 62, duong 2, KCX Linh Trung 2, Q.Thu Duc
+Thông tin khác
+Bằng cấp: Đại học
+Thời gian thử việc: 2 tháng
+Độ tuổi: Không giới hạn tuổi
+Thời gian làm việc: Giờ hành chính
+Lương: 12 Tr - 25 Tr VND
