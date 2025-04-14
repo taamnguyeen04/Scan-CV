@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo2.jpg" alt="Logo"/>
+</p>
+
 # 📄 CV & JD Matching System
 
 This is an AI-powered web application that **analyzes and evaluates the compatibility between a candidate's CV and a Job Description (JD)**. It leverages advanced NLP techniques and Large Language Models (LLMs) to extract and compare key information.

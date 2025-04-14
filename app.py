@@ -1,8 +1,11 @@
 import streamlit as st
 from qa_chain import build_qa_chain, extract_info
 from similarity import calculate_similarity, draw_radar
+from PIL import Image
 
 st.set_page_config(page_title="CV & JD Matching", layout="centered")
+logo = Image.open("logo2.jpg")
+st.image(logo)
 primary_color = "#1E90FF"
 secondary_color = "#FF6347"
 background_color = "#F5F5F5"
