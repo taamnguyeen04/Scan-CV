@@ -38,8 +38,8 @@ st.markdown(f"""
 
 st.title("\U0001F4C4 CV & JD")
 
-cv_file = st.file_uploader("Upload CV (PDF)", type="pdf", key="cv")
-jd_file = st.file_uploader("Upload Job Description (PDF)", type="pdf", key="jd")
+cv_file = st.file_uploader("Upload CV (PDF)", type=["pdf", "docx", "png", "jpg", "jpeg"], key="cv")
+jd_file = st.file_uploader("Upload Job Description (PDF)", type=["pdf", "docx", "png", "jpg", "jpeg"], key="jd")
 
 if cv_file and jd_file:
     with st.spinner("\U0001F50D Đang phân tích CV và JD..."):

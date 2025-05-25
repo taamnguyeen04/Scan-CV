@@ -7,6 +7,7 @@ from transformers import DistilBertTokenizer, DistilBertForMaskedLM
 from pprint import pprint
 from icecream import ic
 import re
+from PIL import Image
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
@@ -77,19 +78,24 @@ def extract_info(text):
     return extracted_info
 
 if __name__ == '__main__':
-    device = 0 if torch.cuda.is_available() else -1
-    fill_mask = pipeline("fill-mask", model="distilbert-base-uncased", device=device)
+    # device = 0 if torch.cuda.is_available() else -1
+    # fill_mask = pipeline("fill-mask", model="distilbert-base-uncased", device=device)
 
+
+    img = Image.open("cv.jpg")
+    text = pytesseract.image_to_string(img)
+    ic(text.replace("\n", ""))
     result = process_image_to_dict("cv.jpg")
-    ic(result.values())
+    # ic(result.values())
+
     s = ""
     for k, v in result.items():
         s += ' '.join(v)
         s += ' '
     ic(s)
-
-    info = extract_info(s)
-    for key, value in info.items():
-        print(f"{key}: {value}\n")
+    #
+    # info = extract_info(s)
+    # for key, value in info.items():
+    #     print(f"{key}: {value}\n")
 
 

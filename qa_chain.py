@@ -1,4 +1,9 @@
+import cv2
+import pytesseract
+from PIL import Image
+from collections import defaultdict
 from langchain_community.document_loaders import PDFPlumberLoader
+from langchain.schema import Document
 from langchain_experimental.text_splitter import SemanticChunker
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
@@ -8,19 +13,55 @@ from langchain.chains.llm import LLMChain
 from langchain.chains.combine_documents.stuff import StuffDocumentsChain
 from langchain.chains import RetrievalQA
 import streamlit as st
+import tempfile
+import os
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
+def process_image_to_text(img_path):
+    img = cv2.imread(img_path)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    ocr_data = pytesseract.image_to_data(img, output_type=pytesseract.Output.DICT)
+    result_dict = defaultdict(list)
+
+    for i in range(len(ocr_data["text"])):
+        if ocr_data["text"][i].strip() and int(ocr_data["conf"][i]) > 60:
+            key = (
+                ocr_data["page_num"][i],
+                ocr_data["block_num"][i],
+                ocr_data["par_num"][i],
+                ocr_data["line_num"][i],
+            )
+            result_dict[key].append(ocr_data["text"][i])
+
+    lines = [" ".join(words) for words in result_dict.values()]
+    full_text = "\n".join(lines)
+    return full_text
 
 
 @st.cache_resource
 def build_qa_chain(uploaded_file):
-    with open("temp.pdf", "wb") as f:
-        f.write(uploaded_file.getvalue())
-    loader = PDFPlumberLoader("temp.pdf")
-    docs = loader.load()
+    filetype = uploaded_file.type
+    temp_path = os.path.join(tempfile.gettempdir(), uploaded_file.name)
 
+    with open(temp_path, "wb") as f:
+        f.write(uploaded_file.getvalue())
+
+    # === Xử lý file PDF ===
+    if filetype == "application/pdf":
+        loader = PDFPlumberLoader(temp_path)
+        docs = loader.load()
+    # === Xử lý ảnh: JPG, PNG ===
+    elif filetype in ["image/jpeg", "image/png"]:
+        text = process_image_to_text(temp_path)
+        if not text.strip():
+            raise ValueError("Không trích xuất được văn bản từ ảnh.")
+        docs = [Document(page_content=text)]
+    else:
+        raise ValueError("Định dạng tệp không được hỗ trợ.")
     embedder = HuggingFaceEmbeddings()
     splitter = SemanticChunker(embedder)
     chunks = splitter.split_documents(docs)
-
     vector = FAISS.from_documents(chunks, embedder)
     retriever = vector.as_retriever(search_type="similarity", search_kwargs={"k": 3})
 
