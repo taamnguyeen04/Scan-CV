@@ -5,7 +5,6 @@ from langchain_community.document_loaders import PDFPlumberLoader, UnstructuredF
 from langchain_experimental.text_splitter import SemanticChunker
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain_community.llms import Ollama
 from langchain.prompts import PromptTemplate
 from langchain.chains.llm import LLMChain
 from langchain.chains.combine_documents.stuff import StuffDocumentsChain
@@ -13,12 +12,21 @@ from langchain.chains import RetrievalQA
 import matplotlib.pyplot as plt
 import numpy as np
 import pytesseract
+from langchain_google_genai import ChatGoogleGenerativeAI
+from dotenv import load_dotenv
+
+load_dotenv()
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-# ✅ Ngăn lỗi torch.classes do Streamlit Watcher
 os.environ["STREAMLIT_WATCH_DISABLE"] = "true"
 
-# ========== UI Customization ==========
+def get_gemini_model():
+    return ChatGoogleGenerativeAI(
+        model="gemini-1.5-flash",
+        temperature=0.1,
+        max_output_tokens=2048
+    )
+
 st.set_page_config(page_title="CV & JD Matching", layout="centered")
 logo = Image.open("logo2.jpg")
 st.image(logo)
@@ -54,17 +62,13 @@ st.markdown(f"""
 
 st.title("\U0001F4C4 CV & JD")
 
-# ========== Upload ==========
 cv_file = st.file_uploader("Upload CV", type=["pdf", "docx", "png", "jpg", "jpeg"], key="cv")
 jd_file = st.file_uploader("Upload JD", type=["pdf", "docx", "png", "jpg", "jpeg"], key="jd")
 
-
-# ========== Embedding Model ==========
 @st.cache_resource
 def get_similarity_model():
     from sentence_transformers import SentenceTransformer
     return SentenceTransformer("all-MiniLM-L6-v2")
-
 
 def calculate_similarity(text1, text2):
     if not text1 or not text2:
@@ -75,8 +79,6 @@ def calculate_similarity(text1, text2):
     emb2 = model.encode(text2, convert_to_tensor=True)
     return round(util.pytorch_cos_sim(emb1, emb2).item(), 2)
 
-
-# ========== Radar Chart ==========
 def draw_radar(scores_dict):
     labels = list(scores_dict.keys())
     values = list(scores_dict.values())
@@ -92,7 +94,6 @@ def draw_radar(scores_dict):
     ax.set_title("Biểu đồ đánh giá mức độ phù hợp", fontsize=16)
     st.pyplot(fig)
 
-
 # ========== Prompt ==========
 system_prompt = PromptTemplate.from_template("""
 Bạn đang đóng vai trò là một chuyên gia tuyển dụng có kinh nghiệm trong việc đánh giá mức độ phù hợp giữa hồ sơ ứng viên (CV) và bản mô tả công việc (JD). 
@@ -106,7 +107,6 @@ Question: {question}
 Trả lời chi tiết và chính xác:
 """)
 
-
 # ========== QA Builder ==========
 @st.cache_resource
 def build_qa_chain(uploaded_file):
@@ -118,15 +118,15 @@ def build_qa_chain(uploaded_file):
     if ext in ["jpg", "jpeg", "png"]:
         image = Image.open(file_name)
         extracted_text = pytesseract.image_to_string(image, lang='eng')
-        # st.text_area("🖼 Văn bản trích xuất từ ảnh:", extracted_text, height=200)
         if not extracted_text.strip():
             st.warning("⚠️Không trích xuất được văn bản từ ảnh.")
             return lambda q: "Không có nội dung văn bản trong ảnh để phân tích."
 
         def qa_fn(question):
-            llm = Ollama(model="deepseek-coder-v2:16b", temperature=0.1)
+            llm = get_gemini_model()
             prompt = system_prompt.format(context=extracted_text, question=question)
-            return llm.invoke(prompt)
+            response = llm.invoke(prompt)
+            return response.content
 
         return qa_fn
 
@@ -143,7 +143,7 @@ def build_qa_chain(uploaded_file):
     vector = FAISS.from_documents(chunks, embedder)
     retriever = vector.as_retriever(search_type="similarity", search_kwargs={"k": 3})
 
-    llm = Ollama(model="deepseek-coder-v2:16b", temperature=0.1)
+    llm = get_gemini_model()
     llm_chain = LLMChain(llm=llm, prompt=system_prompt)
     combine_docs_chain = StuffDocumentsChain(
         llm_chain=llm_chain,
@@ -159,7 +159,6 @@ def build_qa_chain(uploaded_file):
         return qa_chain.run(question).strip()
 
     return qa_fn
-
 
 # ========== Evaluation ==========
 if cv_file and jd_file:
