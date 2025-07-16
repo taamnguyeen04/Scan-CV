@@ -22,7 +22,7 @@ os.environ["STREAMLIT_WATCH_DISABLE"] = "true"
 
 def get_gemini_model():
     return ChatGoogleGenerativeAI(
-        model="gemini-1.5-flash",
+        model="gemini-2.0-flash",
         temperature=0.1,
         max_output_tokens=2048
     )
