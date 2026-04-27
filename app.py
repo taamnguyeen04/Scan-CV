@@ -14,7 +14,7 @@ import numpy as np
 import pytesseract
 from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
-
+from langchain_openai import ChatOpenAI
 load_dotenv()
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
@@ -22,9 +22,17 @@ os.environ["STREAMLIT_WATCH_DISABLE"] = "true"
 
 def get_gemini_model():
     return ChatGoogleGenerativeAI(
-        model="gemini-2.0-flash",
+        model="gemini-3-flash-preview",
         temperature=0.1,
-        max_output_tokens=2048
+        # max_output_tokens=2048
+    )
+
+# Thêm hàm này:
+def get_openai_model():
+    return ChatOpenAI(
+        model="gpt-4o-mini", # Hoặc gpt-3.5-turbo tùy bạn
+        temperature=0.1,
+        # max_tokens=2048
     )
 
 st.set_page_config(page_title="CV & JD Matching", layout="centered")
@@ -115,6 +123,8 @@ def build_qa_chain(uploaded_file):
         f.write(uploaded_file.getvalue())
 
     ext = uploaded_file.name.split(".")[-1].lower()
+    
+    # 1. TRƯỜNG HỢP FILE ẢNH
     if ext in ["jpg", "jpeg", "png"]:
         image = Image.open(file_name)
         extracted_text = pytesseract.image_to_string(image, lang='eng')
@@ -123,14 +133,22 @@ def build_qa_chain(uploaded_file):
             return lambda q: "Không có nội dung văn bản trong ảnh để phân tích."
 
         def qa_fn(question):
-            llm = get_gemini_model()
             prompt = system_prompt.format(context=extracted_text, question=question)
-            response = llm.invoke(prompt)
+            try:
+                # Ưu tiên dùng OpenAI trước
+                llm = get_openai_model()
+                response = llm.invoke(prompt)
+            except Exception as e:
+                # Nếu OpenAI lỗi (hết token, rate limit...), chuyển sang Gemini
+                print(f"OpenAI lỗi: {e}. Đang chuyển sang Gemini...")
+                llm = get_gemini_model()
+                response = llm.invoke(prompt)
+                
             return response.content
 
         return qa_fn
 
-    # PDF or DOCX
+    # 2. TRƯỜNG HỢP FILE PDF HOẶC DOCX
     if ext == "pdf":
         loader = PDFPlumberLoader(file_name)
     else:
@@ -143,20 +161,31 @@ def build_qa_chain(uploaded_file):
     vector = FAISS.from_documents(chunks, embedder)
     retriever = vector.as_retriever(search_type="similarity", search_kwargs={"k": 3})
 
-    llm = get_gemini_model()
-    llm_chain = LLMChain(llm=llm, prompt=system_prompt)
-    combine_docs_chain = StuffDocumentsChain(
-        llm_chain=llm_chain,
-        document_variable_name="context",
-        document_prompt=PromptTemplate(
-            input_variables=["page_content", "source"],
-            template="Context:\ncontent:{page_content}\nsource:{source}"
+    # Hàm phụ để tạo chuỗi QA dựa trên model được truyền vào
+    def create_qa_chain_with_model(model):
+        llm_chain = LLMChain(llm=model, prompt=system_prompt)
+        combine_docs_chain = StuffDocumentsChain(
+            llm_chain=llm_chain,
+            document_variable_name="context",
+            document_prompt=PromptTemplate(
+                input_variables=["page_content", "source"],
+                template="Context:\ncontent:{page_content}\nsource:{source}"
+            )
         )
-    )
-    qa_chain = RetrievalQA(combine_documents_chain=combine_docs_chain, retriever=retriever)
+        return RetrievalQA(combine_documents_chain=combine_docs_chain, retriever=retriever)
+
+    # Tạo sẵn 2 chuỗi cho 2 model
+    gemini_qa_chain = create_qa_chain_with_model(get_gemini_model())
+    openai_qa_chain = create_qa_chain_with_model(get_openai_model())
 
     def qa_fn(question):
-        return qa_chain.run(question).strip()
+        try:
+            # Ưu tiên chạy bằng OpenAI trước
+            return openai_qa_chain.run(question).strip()
+        except Exception as e:
+            # Nếu chạy OpenAI thất bại, tự động chuyển sang Gemini
+            print(f"OpenAI lỗi: {e}. Đang chuyển sang Gemini...")
+            return gemini_qa_chain.run(question).strip()
 
     return qa_fn
 
